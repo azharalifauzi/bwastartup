@@ -28,6 +28,7 @@ func main() {
 	apiv1 := router.Group("/api/v1")
 
 	apiv1.POST("/users", userHandler.RegisterUser)
+	apiv1.POST("/sessions", userHandler.Login)
 
 	router.Run()
 }
