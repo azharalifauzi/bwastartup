@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bwastartup/auth"
 	"bwastartup/handler"
 	"bwastartup/user"
 	"log"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -18,10 +20,17 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
+	err = godotenv.Load(".env")
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
 	userRepository := user.NewRepository(db)
 	userService := user.NewService(userRepository)
+	authService := auth.NewService()
 
-	userHandler := handler.NewUserHandler(userService)
+	userHandler := handler.NewUserHandler(userService, authService)
 
 	router := gin.Default()
 
