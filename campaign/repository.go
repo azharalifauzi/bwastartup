@@ -27,7 +27,7 @@ func (r *repository) FindAll() ([]Campaign, error) {
 	return campaigns, nil
 }
 
-func (r *repository) FindByID(id int) ([]Campaign, error) {
+func (r *repository) FindByUserID(id int) ([]Campaign, error) {
 	var campaigns []Campaign
 
 	err := r.db.Where("user_id = ?", id).Preload("CampaignImages", "campaign_images.is_primary = 1").Find(&campaigns).Error
