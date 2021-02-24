@@ -50,6 +50,7 @@ func main() {
 	apiv1.POST("/avatars", authMiddelware(authService, userService), userHandler.UploadAvatar)
 
 	apiv1.GET("/campaigns", campaignHandler.GetCampaigns)
+	apiv1.GET("/campaigns/:id", campaignHandler.GetCampaign)
 
 	router.Run()
 }
