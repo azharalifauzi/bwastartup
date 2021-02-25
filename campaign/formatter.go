@@ -1,6 +1,8 @@
 package campaign
 
-import "strings"
+import (
+	"strings"
+)
 
 type CampaignFormatter struct {
 	ID               int    `json:"id"`
@@ -89,6 +91,8 @@ func FormatCampaignDetail(campaign Campaign) CampaignDetailFormatter {
 	for _, perk := range strings.Split(campaign.Perks, ";") {
 		perks = append(perks, strings.TrimSpace(perk))
 	}
+
+	campaignDetailFormatter.Perks = perks
 
 	user := campaign.User
 
