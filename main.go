@@ -52,6 +52,7 @@ func main() {
 	apiv1.GET("/campaigns", campaignHandler.GetCampaigns)
 	apiv1.GET("/campaigns/:id", campaignHandler.GetCampaign)
 	apiv1.POST("/campaigns", authMiddelware(authService, userService), campaignHandler.CreateCampaign)
+	apiv1.PUT("/campaigns/:id", authMiddelware(authService, userService), campaignHandler.UpdateCampaign)
 
 	router.Run()
 }

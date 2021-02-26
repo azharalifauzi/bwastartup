@@ -3,6 +3,7 @@ package campaign
 import (
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/gosimple/slug"
 )
@@ -11,6 +12,7 @@ type Service interface {
 	GetCampaigns(userID int) ([]Campaign, error)
 	GetCampaignByID(input GetCampaignDetailInput) (Campaign, error)
 	CreateCampaign(input CreateCampaignInput) (Campaign, error)
+	UpdateCampaign(inputID GetCampaignDetailInput, inputData UpdateCampaignInput) (Campaign, error)
 }
 
 type service struct {
@@ -76,4 +78,49 @@ func (s *service) CreateCampaign(input CreateCampaignInput) (Campaign, error) {
 
 	return newCampagin, nil
 
+}
+
+func (s *service) UpdateCampaign(inputID GetCampaignDetailInput, inputData UpdateCampaignInput) (Campaign, error) {
+	campaign, err := s.repository.FindByID(inputID.ID)
+
+	if err != nil {
+		return campaign, err
+	}
+
+	if campaign.ID == 0 {
+		return campaign, errors.New("404")
+	}
+
+	if inputData.User.ID != campaign.UserID {
+		return campaign, errors.New("401")
+	}
+
+	c := reflect.ValueOf(&campaign).Elem()
+	ri := reflect.ValueOf(&inputData).Elem()
+	typeOfRi := ri.Type()
+
+	for i := 0; i < typeOfRi.NumField(); i++ {
+		value := ri.Field(i).Interface()
+		field := typeOfRi.Field(i).Name
+
+		str, ok := value.(string)
+
+		if ok && len(str) > 0 {
+			c.FieldByName(field).SetString(str)
+		}
+
+		integer, ok := value.(int)
+
+		if ok && integer > 0 {
+			c.FieldByName(field).SetInt(int64(integer))
+		}
+	}
+
+	updatedCampaign, err := s.repository.Update(campaign)
+
+	if err != nil {
+		return updatedCampaign, err
+	}
+
+	return updatedCampaign, nil
 }

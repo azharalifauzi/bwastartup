@@ -14,3 +14,12 @@ type CreateCampaignInput struct {
 	GoalAmount       int    `json:"goal_amount" binding:"required"`
 	User             user.User
 }
+
+type UpdateCampaignInput struct {
+	Name             string `json:"name" binding:"omitempty"`
+	ShortDescription string `json:"short_description" binding:"omitempty"`
+	Description      string `json:"description" binding:"omitempty"`
+	Perks            string `json:"perks" binding:"omitempty"`
+	GoalAmount       int    `json:"goal_amount" binding:"omitempty"`
+	User             user.User
+}
