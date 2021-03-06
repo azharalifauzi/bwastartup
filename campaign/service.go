@@ -13,6 +13,7 @@ type Service interface {
 	GetCampaignByID(input GetCampaignDetailInput) (Campaign, error)
 	CreateCampaign(input CreateCampaignInput) (Campaign, error)
 	UpdateCampaign(inputID GetCampaignDetailInput, inputData UpdateCampaignInput) (Campaign, error)
+	SaveCampaignImage(input CreateCampaignImageInput, fileLocation string) (CampaignImage, error)
 }
 
 type service struct {
@@ -51,7 +52,7 @@ func (s *service) GetCampaignByID(input GetCampaignDetailInput) (Campaign, error
 	}
 
 	if campaign.ID == 0 {
-		errMessage := fmt.Sprintf("Campaign with that ID of %s was not found", input.ID)
+		errMessage := fmt.Sprintf("Campaign with that ID of %d was not found", input.ID)
 		return campaign, errors.New(errMessage)
 	}
 
@@ -67,7 +68,7 @@ func (s *service) CreateCampaign(input CreateCampaignInput) (Campaign, error) {
 	campaign.UserID = input.User.ID
 	campaign.Perks = input.Perks
 
-	slugCandidate := fmt.Sprintf("%s %s", input.Name, input.User.ID)
+	slugCandidate := fmt.Sprintf("%s %d", input.Name, input.User.ID)
 	campaign.Slug = slug.Make(slugCandidate)
 
 	newCampagin, err := s.repository.Save(campaign)
@@ -123,4 +124,42 @@ func (s *service) UpdateCampaign(inputID GetCampaignDetailInput, inputData Updat
 	}
 
 	return updatedCampaign, nil
+}
+
+func (s *service) SaveCampaignImage(input CreateCampaignImageInput, fileLocation string) (CampaignImage, error) {
+
+	campaign, err := s.repository.FindByID(input.CampaignID)
+
+	if err != nil {
+		return CampaignImage{}, err
+	}
+
+	if input.User.ID != campaign.UserID {
+		return CampaignImage{}, errors.New("401")
+	}
+
+	isPrimary := 0
+
+	if input.IsPrimary {
+		isPrimary = 1
+
+		_, err := s.repository.MarkAllImagesAsNonPrimary(input.CampaignID)
+
+		if err != nil {
+			return CampaignImage{}, err
+		}
+	}
+
+	campaignImage := CampaignImage{}
+	campaignImage.FileName = fileLocation
+	campaignImage.CampaignID = input.CampaignID
+	campaignImage.IsPrimary = isPrimary
+
+	newCampaignImage, err := s.repository.CreateImage(campaignImage)
+
+	if err != nil {
+		return newCampaignImage, err
+	}
+
+	return newCampaignImage, nil
 }
